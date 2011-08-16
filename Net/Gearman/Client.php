@@ -140,14 +140,14 @@ class Net_Gearman_Client
      * @return void
      * @see Net_Gearman_Task, Net_Gearman_Set
      */
-    public function doEpoch($func, array $args = array(), $epoch)
+    public function doEpoch($func, array $args = array(), $uniq = null, $epoch)
     {
         $send = "";
         if (isset($args[0]) && !empty($args[0])) {
             $send = $args[0];
         }
 
-        $task = new Net_Gearman_Task($func, $send, null, Net_Gearman_Task::JOB_EPOCH, $epoch);
+        $task = new Net_Gearman_Task($func, $send, $uniq, Net_Gearman_Task::JOB_EPOCH, $epoch);
 
         $set = new Net_Gearman_Set();
         $set->addTask($task);
