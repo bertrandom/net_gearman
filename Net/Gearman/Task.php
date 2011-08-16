@@ -107,6 +107,8 @@ class Net_Gearman_Task
      */
     public $result = '';
 
+	public $epoch = 0;
+
     /**
      * Callbacks registered for each state
      *
@@ -171,6 +173,8 @@ class Net_Gearman_Task
      */
     const JOB_LOW_BACKGROUND = 6;
 
+	const JOB_EPOCH = 7;
+
     /**
      * Callback of type complete
      *
@@ -217,7 +221,7 @@ class Net_Gearman_Task
      * @throws Net_Gearman_Exception
      */
     public function __construct($func, $arg, $uniq = null,
-                                $type = self::JOB_NORMAL) 
+                                $type = self::JOB_NORMAL, $epoch = 0) 
     {
         $this->func = $func;
         $this->arg  = $arg;
@@ -229,7 +233,12 @@ class Net_Gearman_Task
         }
 
         $type = (int) $type;
-        if ($type > 6) {
+
+		if ($type == self::JOB_EPOCH) {
+			$this->epoch = $epoch;
+		}
+
+        if ($type > 7) {
             throw new Net_Gearman_Exception(
                 "Unknown job type: {$type}. Please see Net_Gearman_Task::JOB_* constants."
             );

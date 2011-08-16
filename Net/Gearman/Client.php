@@ -132,6 +132,30 @@ class Net_Gearman_Client
     }
 
     /**
+     * Fire off a background task with the given arguments
+     *
+     * @param string $func Name of job to run
+     * @param array  $args First key should be args to send 
+     *
+     * @return void
+     * @see Net_Gearman_Task, Net_Gearman_Set
+     */
+    public function doEpoch($func, array $args = array(), $epoch)
+    {
+        $send = "";
+        if (isset($args[0]) && !empty($args[0])) {
+            $send = $args[0];
+        }
+
+        $task = new Net_Gearman_Task($func, $send, null, Net_Gearman_Task::JOB_EPOCH, $epoch);
+
+        $set = new Net_Gearman_Set();
+        $set->addTask($task);
+        $this->runSet($set);
+        return $task->handle;
+    }
+
+    /**
      * Submit a task to Gearman
      *
      * @param object $task Task to submit to Gearman
@@ -157,6 +181,11 @@ class Net_Gearman_Client
         case Net_Gearman_Task::JOB_HIGH:
             $type = 'submit_job_high';
             break;
+
+		case Net_Gearman_Task::JOB_EPOCH:
+	        $type = 'submit_job_epoch';
+	        break;
+
         default:
             $type = 'submit_job';
             break;
@@ -175,6 +204,10 @@ class Net_Gearman_Client
             'uniq' => $task->uniq,
             'arg'  => $arg
         );
+
+		if ($task->type == Net_Gearman_Task::JOB_EPOCH) {
+			$params['epoch'] = $task->epoch;
+		}
 
         $s = $this->getConnection();
         Net_Gearman_Connection::send($s, $type, $params);
@@ -232,7 +265,8 @@ class Net_Gearman_Client
                 $this->submitTask($set->tasks[$k]);
                 if ($set->tasks[$k]->type == Net_Gearman_Task::JOB_BACKGROUND ||
                     $set->tasks[$k]->type == Net_Gearman_Task::JOB_HIGH_BACKGROUND ||
-                    $set->tasks[$k]->type == Net_Gearman_Task::JOB_LOW_BACKGROUND) {
+                    $set->tasks[$k]->type == Net_Gearman_Task::JOB_LOW_BACKGROUND ||
+					$set->tasks[$k]->type == Net_Gearman_Task::JOB_EPOCH) {
 
                     $set->tasks[$k]->finished = true;
                     $set->tasksCount--;
