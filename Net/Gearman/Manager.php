@@ -21,8 +21,6 @@
  * @link      http://www.danga.com/gearman/
  */
 
-require_once 'Net/Gearman/Connection.php';
-
 /**
  * A client for managing Gearmand servers
  *
